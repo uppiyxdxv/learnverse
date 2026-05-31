@@ -51,12 +51,12 @@
       <select id="enroll-course">
         <option value="">-- Select a Course --</option>
         <option value="HTML">HTML – Web Structure Fundamentals</option>
-        <option value="CSS">CSS – Styling & Responsive Design</option>
+        <option value="CSS">CSS – Styling &amp; Responsive Design</option>
         <option value="JavaScript">JavaScript – Interactive Web Dev</option>
         <option value="Java">Java – Object Oriented Programming</option>
-        <option value="Python">Python – Scripting & Data Science</option>
+        <option value="Python">Python – Scripting &amp; Data Science</option>
         <option value="SQL">SQL – Relational Databases</option>
-        <option value="MongoDB">MongoDB – NoSQL & Atlas Cloud</option>
+        <option value="MongoDB">MongoDB – NoSQL &amp; Atlas Cloud</option>
       </select>
       <div class="form-error" id="en-course-err">Please select a course.</div>
     </div>
@@ -82,10 +82,38 @@
   </div>
 </div>
 
+<!-- ── Step 1: Firebase SDK (module) — runs first, exposes db/auth on window ── -->
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyANJu1Wley6RMpw3giuxEZv-BKi0qJIjso",
+    authDomain: "learnverse-967f5.firebaseapp.com",
+    databaseURL: "https://learnverse-967f5-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "learnverse-967f5",
+    storageBucket: "learnverse-967f5.firebasestorage.app",
+    messagingSenderId: "932910754246",
+    appId: "1:932910754246:web:0560ef7084c2bacb46aac7",
+    measurementId: "G-6T1PFEJ5L9"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
+
+<!-- ── Step 2: main.js (AuthDB, showToast, etc.) ── -->
 <script src="../js/main.js"></script>
+
+<!-- ── Step 3: Enrollment logic — waits for Firebase to be ready ── -->
 <script>
-  // ── WhatsApp community links per course ──
-  // 🔧 REPLACE these with your actual WhatsApp group invite links
+  // 🔧 REPLACE each value with your real WhatsApp group invite links
   const WHATSAPP_LINKS = {
     HTML:       'https://chat.whatsapp.com/YOUR_HTML_GROUP_LINK',
     CSS:        'https://chat.whatsapp.com/YOUR_CSS_GROUP_LINK',
@@ -96,8 +124,8 @@
     MongoDB:    'https://chat.whatsapp.com/YOUR_MONGODB_GROUP_LINK',
   };
 
-  // Pre-fill course from URL param
-  const params = new URLSearchParams(window.location.search);
+  // ── Pre-fill course from URL param e.g. enroll.html?course=Python ──
+  const params    = new URLSearchParams(window.location.search);
   const preselect = params.get('course');
   if (preselect) {
     const sel = document.getElementById('enroll-course');
@@ -106,91 +134,120 @@
     }
   }
 
-  // Pre-fill email if logged in
+  // ── Pre-fill name/email if user is already logged in ──
   const session = AuthDB.getSession();
   if (session) {
     document.getElementById('enroll-email').value = session.email;
-    document.getElementById('enroll-name').value = session.name;
+    document.getElementById('enroll-name').value  = session.name;
   }
 
-  document.getElementById('enrollBtn').addEventListener('click', () => {
-    const name   = document.getElementById('enroll-name').value.trim();
-    const email  = document.getElementById('enroll-email').value.trim();
-    const phone  = document.getElementById('enroll-phone').value.trim();
-    const course = document.getElementById('enroll-course').value;
-    let valid = true;
+  // ── Form submit handler ──
+  document.getElementById('enrollBtn').addEventListener('click', async () => {
+    const name    = document.getElementById('enroll-name').value.trim();
+    const email   = document.getElementById('enroll-email').value.trim();
+    const phone   = document.getElementById('enroll-phone').value.trim();
+    const course  = document.getElementById('enroll-course').value;
+    const message = document.getElementById('enroll-message').value.trim();
+    const btn     = document.getElementById('enrollBtn');
 
+    // Clear previous errors
     document.querySelectorAll('.form-error').forEach(e => e.classList.remove('show'));
-    document.querySelectorAll('input,select').forEach(i => i.classList.remove('input-error'));
+    document.querySelectorAll('input, select').forEach(i => i.classList.remove('input-error'));
 
-    if (!name) { document.getElementById('en-name-err').classList.add('show'); document.getElementById('enroll-name').classList.add('input-error'); valid = false; }
-    if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) { document.getElementById('en-email-err').classList.add('show'); document.getElementById('enroll-email').classList.add('input-error'); valid = false; }
-    if (!phone || phone.length < 7) { document.getElementById('en-phone-err').classList.add('show'); document.getElementById('enroll-phone').classList.add('input-error'); valid = false; }
-    if (!course) { document.getElementById('en-course-err').classList.add('show'); document.getElementById('enroll-course').classList.add('input-error'); valid = false; }
+    // Validate
+    let valid = true;
+    if (!name) {
+      document.getElementById('en-name-err').classList.add('show');
+      document.getElementById('enroll-name').classList.add('input-error');
+      valid = false;
+    }
+    if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
+      document.getElementById('en-email-err').classList.add('show');
+      document.getElementById('enroll-email').classList.add('input-error');
+      valid = false;
+    }
+    if (!phone || phone.replace(/\D/g, '').length < 7) {
+      document.getElementById('en-phone-err').classList.add('show');
+      document.getElementById('enroll-phone').classList.add('input-error');
+      valid = false;
+    }
+    if (!course) {
+      document.getElementById('en-course-err').classList.add('show');
+      document.getElementById('enroll-course').classList.add('input-error');
+      valid = false;
+    }
     if (!valid) return;
 
-    const btn = document.getElementById('enrollBtn');
     btn.textContent = 'Processing…';
-    btn.disabled = true;
+    btn.disabled    = true;
 
-    // Save enrollment to localStorage (acts as local DB)
-    setTimeout(() => {
-      // Save enrollment (works both for guests and logged-in users)
-      const enrollments = JSON.parse(localStorage.getItem('lv_enrollments') || '[]');
-      const existing = enrollments.find(e => e.email === email && e.course === course);
-      if (existing) {
-        showToast(`You're already enrolled in ${course}!`, 'error');
-        btn.textContent = 'Submit Enrollment →';
-        btn.disabled = false;
-        return;
+    try {
+      if (window._firebaseReady && window._db) {
+        // ── Save to Firestore ──
+        const { collection, addDoc, getDocs, query, where } = window._firestoreHelpers;
+        const db = window._db;
+
+        // Check for duplicate enrollment
+        const q        = query(collection(db, 'enrollments'), where('email', '==', email), where('course', '==', course));
+        const existing = await getDocs(q);
+
+        if (!existing.empty) {
+          showToast(`You're already enrolled in ${course}!`, 'error');
+          btn.textContent = 'Submit Enrollment →';
+          btn.disabled    = false;
+          return;
+        }
+
+        // Save new enrollment
+        await addDoc(collection(db, 'enrollments'), {
+          name, email, phone, course, message,
+          enrolledAt: new Date().toISOString(),
+          progress:   0
+        });
+
+      } else {
+        // ── Fallback: save to localStorage if Firebase not configured yet ──
+        const enrollments = JSON.parse(localStorage.getItem('lv_enrollments') || '[]');
+        const duplicate   = enrollments.find(e => e.email === email && e.course === course);
+
+        if (duplicate) {
+          showToast(`You're already enrolled in ${course}!`, 'error');
+          btn.textContent = 'Submit Enrollment →';
+          btn.disabled    = false;
+          return;
+        }
+
+        enrollments.push({
+          id: Date.now(), name, email, phone, course, message,
+          enrolledAt: new Date().toISOString(),
+          progress: 0
+        });
+        localStorage.setItem('lv_enrollments', JSON.stringify(enrollments));
       }
-      enrollments.push({
-        id: Date.now(),
-        name, email, phone, course,
-        message: document.getElementById('enroll-message').value,
-        enrolledAt: new Date().toISOString(),
-        progress: 0
-      });
-      localStorage.setItem('lv_enrollments', JSON.stringify(enrollments));
 
-      // Also update user record if logged in
+      // Also update the in-memory user record if logged in
       if (session) AuthDB.enrollUser(session.email, course, phone);
 
-      // Show success modal
-      document.getElementById('modal-name').textContent = name;
+      // ── Show success modal ──
+      document.getElementById('modal-name').textContent   = name;
       document.getElementById('modal-course').textContent = course;
-      document.getElementById('whatsapp-link').href = WHATSAPP_LINKS[course] || 'https://wa.me/';
+      document.getElementById('whatsapp-link').href       = WHATSAPP_LINKS[course] || '#';
       document.getElementById('successModal').classList.add('show');
+
+    } catch (err) {
+      console.error('Enrollment error:', err);
+      showToast('Something went wrong. Please try again.', 'error');
+    } finally {
       btn.textContent = 'Submit Enrollment →';
-      btn.disabled = false;
-    }, 800);
+      btn.disabled    = false;
+    }
   });
 
+  // ── Close modal and go to dashboard ──
   document.getElementById('modalClose').addEventListener('click', () => {
     document.getElementById('successModal').classList.remove('show');
     window.location.href = 'dashboard.html';
   });
-</script>
-<!-- Firebase SDK -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "learnverse.firebaseapp.com",
-    projectId: "learnverse",
-    storageBucket: "learnverse.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const auth = getAuth(app);
-  window.db = db;
-  window.auth = auth;
 </script>
 </body>
 </html>
