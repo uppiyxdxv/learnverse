@@ -177,19 +177,29 @@
 
   const result = await response.json();
 
-  if (!result.success) {
-    throw new Error(result.message);
+  if (result.success) {
+
+  try {
+    await emailjs.send(
+      "YOUR_SERVICE_ID",
+      "YOUR_TEMPLATE_ID",
+      {
+        user_name: name,
+        user_email: email,
+        registered_at: new Date().toLocaleString("en-IN")
+      }
+    );
+  } catch (mailError) {
+    console.error("Email Error:", mailError);
   }
 
-  // Send admin notification
-  await emailjs.send('service_63ztzjj', 'template_e5c8udj', {
-    from_name: name,
-    from_email: email,
-    phone: phone,
-    course: course,
-    message: message || 'No message provided',
-    enrolled_at: new Date().toLocaleString('en-IN')
-  });
+  showToast('Account created! Welcome to MarcHub 🚀', 'success');
+
+  setTimeout(() => {
+    window.location.href = 'login.html';
+  }, 1000);
+}
+
 
   // Send student confirmation
   await emailjs.send('service_63ztzjj', 'template_0gbkr7y', {
