@@ -40,9 +40,20 @@ ul { list-style: none; }
   transition: all 0.3s;
 }
 .navbar.scrolled { padding: 0.8rem 5%; }
-.nav-logo {
-  font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em;
-  display: flex; align-items: center; gap: 0.5rem;
+.nav-logo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:1.5rem;
+    font-weight:800;
+    letter-spacing:-0.03em;
+}
+
+.site-logo{
+    width:50px;
+    height:50px;
+    object-fit:contain;
+    border-radius:50%;
 }
 .logo-icon { color: var(--accent); font-size: 1.8rem; }
 .nav-links { display: flex; align-items: center; gap: 2rem; }
