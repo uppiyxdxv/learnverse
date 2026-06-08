@@ -176,8 +176,18 @@
     });
 
     const result = await response.json();
+    console.log("Status:", response.status);
+    console.log("Result:", result);
 
-    if (!response.ok) {
+if (!result.success) {
+  showToast(
+    result.message || "You have already registered for this course!",
+    "error"
+  );
+  return;
+}
+
+    if (!response.success) {
         showToast(result.message, "error");
         return;
     }
