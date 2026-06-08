@@ -41,6 +41,7 @@
 
 <script src="../js/main.js"></script>
 <script>
+  if (AuthDB.getSession()) window.location.href = 'dashboard.html';
 const loginBtn = document.getElementById('loginBtn');
 
 loginBtn.addEventListener('click', async () => {

@@ -129,32 +129,33 @@
     const btn     = document.getElementById('enrollBtn');
 
     // Clear previous errors
+     function validate(name, email, phone, course) {
+    let ok = true;
     document.querySelectorAll('.form-error').forEach(e => e.classList.remove('show'));
     document.querySelectorAll('input, select').forEach(i => i.classList.remove('input-error'));
 
-    // Validate
-    let valid = true;
     if (!name) {
       document.getElementById('en-name-err').classList.add('show');
       document.getElementById('enroll-name').classList.add('input-error');
-      valid = false;
+      ok = false;
     }
     if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
       document.getElementById('en-email-err').classList.add('show');
       document.getElementById('enroll-email').classList.add('input-error');
-      valid = false;
+      ok = false;
     }
     if (!phone || phone.replace(/\D/g, '').length < 7) {
       document.getElementById('en-phone-err').classList.add('show');
       document.getElementById('enroll-phone').classList.add('input-error');
-      valid = false;
+      ok = false;
     }
     if (!course) {
       document.getElementById('en-course-err').classList.add('show');
       document.getElementById('enroll-course').classList.add('input-error');
-      valid = false;
+      ok = false;
     }
-    if (!valid) return;
+    return ok;
+  }
 
     btn.textContent = 'Processing…';
     btn.disabled    = true;
@@ -182,6 +183,10 @@
   console.log("Session object:", AuthDB.getSession());
   console.log("lv_session:", localStorage.getItem("lv_session"));
 
+if (response.status === 409) {
+  showToast(`You have already registered for ${course}!`, 'error');
+  return;
+}
   if (result.success) {
 
   try {
@@ -237,7 +242,7 @@
   });
 
   // ── Close modal and go to dashboard ──
-  document.getElementById('modalClose').addEventListener('click', () => {
+    document.getElementById('modalClose').addEventListener('click', () => {
     document.getElementById('successModal').classList.remove('show');
     window.location.href = 'dashboard.html';
   });
