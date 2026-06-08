@@ -178,10 +178,7 @@
     })
   });
 
-  const result = await response.json();
-  console.log("=== AFTER JSON PARSE ===");
-  console.log("Session object:", AuthDB.getSession());
-  console.log("lv_session:", localStorage.getItem("lv_session"));
+const result = await response.json();
 
 if (response.status === 409) {
   showToast(`You have already registered for ${course}!`, 'error');
