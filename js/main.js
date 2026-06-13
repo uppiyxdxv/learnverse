@@ -105,8 +105,11 @@ window.AuthDB = {
   }
 };
 console.log('%cMarcHub 🚀', 'color:#00f5c4;font-size:1.5rem;font-weight:bold;');
-document.getElementById("enrollBtn").addEventListener("click", async (e) => {
-  e.preventDefault();
+const enrollBtn = document.getElementById('enrollBtn');
+
+if (enrollBtn) {
+  enrollBtn.addEventListener('click', enrollUser);
+}
 
   const name = document.getElementById("enroll-name").value.trim();
   const email = document.getElementById("enroll-email").value.trim();
